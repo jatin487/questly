@@ -89,50 +89,44 @@ export default function TeamsPage() {
     setSubmitting(true)
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) throw new Error('Not authenticated')
-
-      // Create team
-      const { data: teamData, error: teamError } = await supabase
-        .from('teams')
-        .insert({
+      const response = await fetch('/api/teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: newTeamName,
           description: newTeamDesc,
-          created_by: user.id,
-        })
-        .select()
-        .single()
-
-      if (teamError) throw teamError
-
-      // Add user as admin
-      const { error: memberError } = await supabase.from('team_members').insert({
-        team_id: teamData.id,
-        user_id: user.id,
-        role: 'admin',
+        }),
       })
 
-      if (memberError) throw memberError
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create team')
+      }
+
+      const teamData = await response.json()
 
       setNewTeamName('')
       setNewTeamDesc('')
       setCreateOpen(false)
 
-      // Reload teams
-      const { data: updatedTeams } = await supabase
-        .from('team_members')
-        .select('team_id, role, teams(*)')
-        .eq('user_id', user.id)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-      setUserTeams(
-        (updatedTeams || []).map((m: any) => ({
-          team: m.teams,
-          role: m.role,
-        }))
-      )
+      if (user) {
+        // Reload teams
+        const { data: updatedTeams } = await supabase
+          .from('team_members')
+          .select('team_id, role, teams(*)')
+          .eq('user_id', user.id)
+
+        setUserTeams(
+          (updatedTeams || []).map((m: any) => ({
+            team: m.teams,
+            role: m.role,
+          }))
+        )
+      }
     } catch (error) {
       console.error('Error creating team:', error)
       alert('Failed to create team')
