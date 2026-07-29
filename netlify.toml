@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = ".netlify/output"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Optional: set environment variables locally for Netlify CLI
+#[context.development.environment]
+#  NODE_VERSION = "18"
