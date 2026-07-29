@@ -89,6 +89,12 @@ export default function TeamsPage() {
     setSubmitting(true)
 
     try {
+      if (!newTeamName.trim()) {
+        alert('Team name is required')
+        setSubmitting(false)
+        return
+      }
+
       const response = await fetch('/api/teams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -98,12 +104,19 @@ export default function TeamsPage() {
         }),
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to create team')
+      const responseText = await response.text()
+      let errorData
+      try {
+        errorData = JSON.parse(responseText)
+      } catch {
+        errorData = { error: responseText }
       }
 
-      const teamData = await response.json()
+      if (!response.ok) {
+        const errorMessage = errorData.error || `HTTP ${response.status}: Failed to create team`
+        console.error('[v0] Team creation error:', { status: response.status, error: errorData })
+        throw new Error(errorMessage)
+      }
 
       setNewTeamName('')
       setNewTeamDesc('')
@@ -128,8 +141,9 @@ export default function TeamsPage() {
         )
       }
     } catch (error) {
-      console.error('Error creating team:', error)
-      alert('Failed to create team')
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.error('[v0] Error creating team:', errorMsg)
+      alert(`Failed to create team: ${errorMsg}`)
     } finally {
       setSubmitting(false)
     }
