@@ -213,6 +213,29 @@ The database schema is automatically created when you deploy. For local developm
    - Seed production missions
    - Share deployment URL with users
 
+## Deployment to Netlify
+
+This project is also deployed to Netlify at:
+
+- https://dbuu-campus-explorer-hunt.netlify.app
+
+### Netlify environment variables
+
+Configure the following in Netlify site settings:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Use the same values from your Supabase project settings as you do locally in `.env.local`.
+
+### Netlify build settings
+
+- Build command: `npm run build`
+- Publish directory: `.next`
+
+If you want to run locally before deployment, keep `.env.local` in the project root and do not commit it.
+
 ## Database Schema Overview
 
 ### Tables
