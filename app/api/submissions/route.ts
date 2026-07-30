@@ -8,12 +8,13 @@ export async function POST(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user) {
+    const body = await request.json()
+    const { mission_id, submission_text, team_id, photo_url, user_id } = body
+    const submittingUserId = user?.id || user_id
+
+    if (!submittingUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const body = await request.json()
-    const { mission_id, submission_text, team_id } = body
 
     // Insert submission
     const { data, error } = await supabase
@@ -21,9 +22,10 @@ export async function POST(request: NextRequest) {
       .insert([
         {
           mission_id,
-          user_id: user.id,
+          user_id: submittingUserId,
           team_id,
           submission_text,
+          photo_url,
           status: 'pending',
         },
       ])
@@ -49,21 +51,20 @@ export async function GET(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user) {
+    const { searchParams } = new URL(request.url)
+    const queryUserId = searchParams.get('user_id')
+    const status = searchParams.get('status')
+    const userId = queryUserId || user?.id
+
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('user_id')
-    const status = searchParams.get('status')
 
     let query = supabase
       .from('mission_submissions')
       .select('*, missions(title), profiles(display_name)')
+      .eq('user_id', userId)
 
-    if (userId) {
-      query = query.eq('user_id', userId)
-    }
     if (status) {
       query = query.eq('status', status)
     }

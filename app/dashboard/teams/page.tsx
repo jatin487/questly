@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getLocalProfile } from '@/lib/profile'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ interface UserTeam {
 }
 
 export default function TeamsPage() {
+  const [localProfile, setLocalProfile] = useState<{ id: string; display_name: string; bio: string } | null>(null)
   const [userTeams, setUserTeams] = useState<UserTeam[]>([])
   const [allTeams, setAllTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
@@ -45,17 +47,28 @@ export default function TeamsPage() {
   useEffect(() => {
     async function loadTeams() {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
+        const localProfile = getLocalProfile()
+        setLocalProfile(localProfile)
 
-        if (!user) return
+        let userId: string | undefined = localProfile?.id
+        if (!userId) {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser()
+          userId = user?.id || undefined
+        }
+
+        if (!userId) {
+          setAllTeams([])
+          setUserTeams([])
+          return
+        }
 
         // Load user's teams
         const { data: memberData, error: memberError } = await supabase
           .from('team_members')
           .select('team_id, role, teams(*)')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
 
         if (memberError) throw memberError
 
@@ -95,12 +108,25 @@ export default function TeamsPage() {
         return
       }
 
+      const localProfile = getLocalProfile()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      const userId = user?.id || localProfile?.id
+
+      if (!userId) {
+        throw new Error('You must register before creating a team')
+      }
+
       const response = await fetch('/api/teams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newTeamName,
           description: newTeamDesc,
+          user_id: userId,
+          display_name: localProfile?.display_name,
+          bio: localProfile?.bio,
         }),
       })
 
@@ -122,16 +148,18 @@ export default function TeamsPage() {
       setNewTeamDesc('')
       setCreateOpen(false)
 
+      const localProfileAfter = getLocalProfile()
       const {
-        data: { user },
+        data: { user: userAfter },
       } = await supabase.auth.getUser()
+      const userIdAfter = userAfter?.id || localProfileAfter?.id
 
-      if (user) {
+      if (userIdAfter) {
         // Reload teams
         const { data: updatedTeams } = await supabase
           .from('team_members')
           .select('team_id, role, teams(*)')
-          .eq('user_id', user.id)
+          .eq('user_id', userIdAfter)
 
         setUserTeams(
           (updatedTeams || []).map((m: any) => ({
@@ -154,15 +182,17 @@ export default function TeamsPage() {
     setSubmitting(true)
 
     try {
+      const localProfile = getLocalProfile()
       const {
         data: { user },
       } = await supabase.auth.getUser()
+      const userId = user?.id || localProfile?.id
 
-      if (!user) throw new Error('Not authenticated')
+      if (!userId) throw new Error('Not authenticated')
 
       const { error } = await supabase.from('team_members').insert({
         team_id: joinTeamId,
-        user_id: user.id,
+        user_id: userId,
         role: 'member',
       })
 
@@ -172,17 +202,25 @@ export default function TeamsPage() {
       setJoinOpen(false)
 
       // Reload teams
-      const { data: updatedTeams } = await supabase
-        .from('team_members')
-        .select('team_id, role, teams(*)')
-        .eq('user_id', user.id)
+      const localProfileAfter = getLocalProfile()
+      const {
+        data: { user: userAfter },
+      } = await supabase.auth.getUser()
+      const userIdAfter = userAfter?.id || localProfileAfter?.id
 
-      setUserTeams(
-        (updatedTeams || []).map((m: any) => ({
-          team: m.teams,
-          role: m.role,
-        }))
-      )
+      if (userIdAfter) {
+        const { data: updatedTeams } = await supabase
+          .from('team_members')
+          .select('team_id, role, teams(*)')
+          .eq('user_id', userIdAfter)
+
+        setUserTeams(
+          (updatedTeams || []).map((m: any) => ({
+            team: m.teams,
+            role: m.role,
+          }))
+        )
+      }
     } catch (error) {
       console.error('Error joining team:', error)
       alert('Failed to join team')

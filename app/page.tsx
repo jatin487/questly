@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { getLocalProfile, saveLocalProfile } from '@/lib/profile'
 
 export default function HomePage() {
   const router = useRouter()
@@ -14,6 +15,12 @@ export default function HomePage() {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
+    const localProfile = getLocalProfile()
+    if (localProfile) {
+      router.push('/dashboard')
+      return
+    }
+
     async function loadTeamCount() {
       try {
         const response = await fetch('/api/register')
@@ -25,7 +32,7 @@ export default function HomePage() {
     }
 
     loadTeamCount()
-  }, [])
+  }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -45,6 +52,7 @@ export default function HomePage() {
         throw new Error(data.error || 'Something went wrong')
       }
 
+      saveLocalProfile(data.profile)
       // After registration, move the user to the dashboard
       router.push('/dashboard')
     } catch (error) {

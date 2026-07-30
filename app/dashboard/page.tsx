@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getLocalProfile } from '@/lib/profile'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -22,6 +23,12 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadProfile() {
       try {
+        const localProfile = getLocalProfile()
+        if (localProfile) {
+          setProfile(localProfile)
+          return
+        }
+
         const {
           data: { user },
         } = await supabase.auth.getUser()

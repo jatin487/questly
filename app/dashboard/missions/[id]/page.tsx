@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { getLocalProfile } from '@/lib/profile'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -78,11 +79,13 @@ export default function MissionDetailPage() {
 
     setSubmitting(true)
     try {
+      const localProfile = getLocalProfile()
       const {
         data: { user },
       } = await supabase.auth.getUser()
+      const userId = user?.id || localProfile?.id
 
-      if (!user) throw new Error('Not authenticated')
+      if (!userId) throw new Error('Not authenticated')
 
       let photoUrl = null
 
@@ -91,27 +94,34 @@ export default function MissionDetailPage() {
         const fileName = `${Date.now()}-${selectedFile.name}`
         const { error: uploadError } = await supabase.storage
           .from('mission-submissions')
-          .upload(`${user.id}/${fileName}`, selectedFile)
+          .upload(`${userId}/${fileName}`, selectedFile)
 
         if (uploadError) throw uploadError
 
         const { data } = supabase.storage
           .from('mission-submissions')
-          .getPublicUrl(`${user.id}/${fileName}`)
+          .getPublicUrl(`${userId}/${fileName}`)
 
         photoUrl = data.publicUrl
       }
 
-      // Create submission
-      const { error: submitError } = await supabase.from('mission_submissions').insert({
-        mission_id: mission.id,
-        user_id: user.id,
-        submission_text: submissionText,
-        photo_url: photoUrl,
-        status: 'pending',
+      const response = await fetch('/api/submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mission_id: mission.id,
+          submission_text: submissionText,
+          team_id: null,
+          photo_url: photoUrl,
+          user_id: userId,
+        }),
       })
 
-      if (submitError) throw submitError
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Submission failed')
+      }
 
       setSuccess(true)
       setTimeout(() => {

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { clearLocalProfile } from '@/lib/profile'
 import { Button } from '@/components/ui/button'
 import { Menu, X, LogOut, Home, Target, Users, Trophy, FileText } from 'lucide-react'
 
@@ -13,7 +14,12 @@ export default function DashboardNav() {
   const supabase = createClient()
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    clearLocalProfile()
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.warn('Logout error:', error)
+    }
     router.push('/')
   }
 

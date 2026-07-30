@@ -44,11 +44,16 @@ export default function SubmissionsPage() {
   useEffect(() => {
     async function loadSubmissions() {
       try {
+        const localProfile = getLocalProfile()
         const {
           data: { user },
         } = await supabase.auth.getUser()
 
-        if (!user) return
+        const userId = user?.id || localProfile?.id
+        if (!userId) {
+          setSubmissions([])
+          return
+        }
 
         const { data, error } = await supabase
           .from('mission_submissions')
@@ -65,7 +70,7 @@ export default function SubmissionsPage() {
             missions(title)
           `
           )
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .order('submitted_at', { ascending: false })
 
         if (error) throw error
