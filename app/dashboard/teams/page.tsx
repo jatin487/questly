@@ -44,56 +44,56 @@ export default function TeamsPage() {
   const [submitting, setSubmitting] = useState(false)
   const supabase = createClient()
 
-  useEffect(() => {
-    async function loadTeams() {
-      try {
-        const localProfile = getLocalProfile()
-        setLocalProfile(localProfile)
+  async function loadTeams() {
+    try {
+      const localProfile = getLocalProfile()
+      setLocalProfile(localProfile)
 
-        let userId: string | undefined = localProfile?.id
-        if (!userId) {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser()
-          userId = user?.id || undefined
-        }
-
-        if (!userId) {
-          setAllTeams([])
-          setUserTeams([])
-          return
-        }
-
-        // Load user's teams
-        const { data: memberData, error: memberError } = await supabase
-          .from('team_members')
-          .select('team_id, role, teams(*)')
-          .eq('user_id', userId)
-
-        if (memberError) throw memberError
-
-        const userTeamsData = (memberData || []).map((m: any) => ({
-          team: m.teams,
-          role: m.role,
-        }))
-
-        setUserTeams(userTeamsData)
-
-        // Load all teams
-        const { data: allTeamsData, error: allTeamsError } = await supabase
-          .from('teams')
-          .select('*')
-          .order('total_points', { ascending: false })
-
-        if (allTeamsError) throw allTeamsError
-        setAllTeams(allTeamsData || [])
-      } catch (error) {
-        console.error('Error loading teams:', error)
-      } finally {
-        setLoading(false)
+      let userId: string | undefined = localProfile?.id
+      if (!userId) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        userId = user?.id || undefined
       }
-    }
 
+      if (!userId) {
+        setAllTeams([])
+        setUserTeams([])
+        return
+      }
+
+      // Load user's teams
+      const { data: memberData, error: memberError } = await supabase
+        .from('team_members')
+        .select('team_id, role, teams(*)')
+        .eq('user_id', userId)
+
+      if (memberError) throw memberError
+
+      const userTeamsData = (memberData || []).map((m: any) => ({
+        team: m.teams,
+        role: m.role,
+      }))
+
+      setUserTeams(userTeamsData)
+
+      // Load all teams
+      const { data: allTeamsData, error: allTeamsError } = await supabase
+        .from('teams')
+        .select('*')
+        .order('total_points', { ascending: false })
+
+      if (allTeamsError) throw allTeamsError
+      setAllTeams(allTeamsData || [])
+    } catch (error) {
+      console.error('Error loading teams:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     loadTeams()
   }, [supabase])
 
@@ -148,26 +148,7 @@ export default function TeamsPage() {
       setNewTeamDesc('')
       setCreateOpen(false)
 
-      const localProfileAfter = getLocalProfile()
-      const {
-        data: { user: userAfter },
-      } = await supabase.auth.getUser()
-      const userIdAfter = userAfter?.id || localProfileAfter?.id
-
-      if (userIdAfter) {
-        // Reload teams
-        const { data: updatedTeams } = await supabase
-          .from('team_members')
-          .select('team_id, role, teams(*)')
-          .eq('user_id', userIdAfter)
-
-        setUserTeams(
-          (updatedTeams || []).map((m: any) => ({
-            team: m.teams,
-            role: m.role,
-          }))
-        )
-      }
+      await loadTeams()
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error'
       console.error('[v0] Error creating team:', errorMsg)
@@ -201,26 +182,7 @@ export default function TeamsPage() {
       setJoinTeamId('')
       setJoinOpen(false)
 
-      // Reload teams
-      const localProfileAfter = getLocalProfile()
-      const {
-        data: { user: userAfter },
-      } = await supabase.auth.getUser()
-      const userIdAfter = userAfter?.id || localProfileAfter?.id
-
-      if (userIdAfter) {
-        const { data: updatedTeams } = await supabase
-          .from('team_members')
-          .select('team_id, role, teams(*)')
-          .eq('user_id', userIdAfter)
-
-        setUserTeams(
-          (updatedTeams || []).map((m: any) => ({
-            team: m.teams,
-            role: m.role,
-          }))
-        )
-      }
+      await loadTeams()
     } catch (error) {
       console.error('Error joining team:', error)
       alert('Failed to join team')
