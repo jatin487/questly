@@ -1,0 +1,185 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                     MISSION IMAGE STORAGE SUMMARY                          ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+WHERE ARE MISSION PHOTOS STORED?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 STORAGE SERVICE: Supabase Storage
+🪣 BUCKET NAME: mission-submissions
+📍 LOCATION: https://vhnvamifepgdkelgboap.supabase.co/storage/v1/object/public/mission-submissions/
+
+CURRENT PROJECT (Old)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Project URL: https://pptlzbklfpghsvdpysmc.supabase.co
+  Bucket: mission-submissions
+  Images stored here currently
+
+YOUR NEW PROJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Project URL: https://vhnvamifepgdkelgboap.supabase.co
+  Project ID: vhnvamifepgdkelgboap
+  Publishable Key: process.env.key
+  API Key: process.env.API_KEY
+
+HOW IMAGES ARE ORGANIZED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  mission-submissions/
+  ├── {user_id_1}/
+  │   ├── 1722345678-photo.jpg
+  │   ├── 1722345679-image.png
+  │   └── 1722345680-screenshot.jpg
+  ├── {user_id_2}/
+  │   ├── 1722345681-photo.jpg
+  │   └── 1722345682-image.png
+  └── {user_id_3}/
+      └── 1722345683-mission-pic.jpg
+
+IMAGE UPLOAD FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  1. User goes to Mission Detail Page
+     ↓
+  2. User selects and uploads photo
+     ↓
+  3. Photo uploaded to Supabase Storage
+     Path: mission-submissions/{user_id}/{timestamp}-{filename}
+     ↓
+  4. Public URL generated
+     https://vhnvamifepgdkelgboap.supabase.co/storage/v1/object/public/
+     mission-submissions/{user_id}/{timestamp}-{filename}
+     ↓
+  5. URL saved in Database
+     Table: mission_submissions
+     Column: photo_url
+     ↓
+  6. Admin can view in /admin/submissions
+  7. On approval, image stays in storage
+
+CODE LOCATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Upload Logic:
+    File: /app/dashboard/missions/[id]/page.tsx
+    Lines: 90-103
+    Bucket: mission-submissions
+
+  Admin View:
+    File: /app/admin/submissions/page.tsx
+    Shows image preview from photo_url
+
+  Storage Setup:
+    File: /app/api/setup/buckets/route.ts
+    Creates bucket automatically
+
+  Supabase Config:
+    File: /lib/supabase/client.ts
+    Uses NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+QUICK MIGRATION TO YOUR PROJECT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Step 1: Get Your API Keys
+  ├─ Go to: https://app.supabase.com/projects
+  ├─ Select: vhnvamifepgdkelgboap
+  ├─ Settings → API
+  └─ Copy Anon Key and Service Role Key
+
+Step 2: Create Storage Bucket
+  ├─ Storage → Create new bucket
+  ├─ Name: mission-submissions
+  ├─ Privacy: Public
+  └─ Click Create
+
+Step 3: Update Environment Variables
+  ├─ NEXT_PUBLIC_SUPABASE_URL=https://vhnvamifepgdkelgboap.supabase.co
+  ├─ NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-key>
+  ├─ SUPABASE_SERVICE_ROLE_KEY=<your-key>
+  └─ Save and restart
+
+Step 4: Test
+  ├─ Go to mission
+  ├─ Upload photo
+  ├─ Check Supabase Storage
+  └─ Image should appear ✓
+
+ENVIRONMENT VARIABLES NEEDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  NEXT_PUBLIC_SUPABASE_URL
+    Value: https://vhnvamifepgdkelgboap.supabase.co
+    Where: .env.local or Vercel Settings
+
+  NEXT_PUBLIC_SUPABASE_ANON_KEY
+    Value: Your Anon Key from Supabase Settings → API
+    Where: .env.local or Vercel Settings
+
+  SUPABASE_SERVICE_ROLE_KEY
+    Value: Your Service Role Key from Supabase Settings → API
+    Where: .env.local or Vercel Settings
+
+ACCESS YOUR IMAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  In Supabase Dashboard:
+    1. Login to https://app.supabase.com
+    2. Select your project
+    3. Click Storage → mission-submissions
+    4. Browse user folders and see images
+
+  Directly via URL:
+    https://vhnvamifepgdkelgboap.supabase.co/storage/v1/object/public/
+    mission-submissions/{user_id}/{filename}
+
+  In Admin Dashboard:
+    http://yourapp.com/admin/submissions
+    View all submitted photos with preview
+
+DATABASE STORAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Table: mission_submissions
+  Columns:
+    ├─ id: Submission ID
+    ├─ mission_id: Which mission
+    ├─ user_id: Who submitted
+    ├─ photo_url: PUBLIC URL to image in storage ← HERE
+    ├─ submission_text: Text description
+    ├─ status: pending/approved/rejected
+    └─ created_at: Timestamp
+
+TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Issue: Images not uploading
+    Solution: Check bucket exists and privacy is Public
+
+  Issue: 404 errors on image URLs
+    Solution: Bucket must be Public, verify URL format
+
+  Issue: Can't find API keys
+    Solution: Supabase → Settings → API section
+
+  Issue: Environment variables not working
+    Solution: Restart dev server or redeploy
+
+DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Quick Setup: See SWITCH_SUPABASE_PROJECT.md
+  Technical Details: See IMAGE_STORAGE_REFERENCE.md
+  Full Migration Guide: See SUPABASE_MIGRATION.md
+  App Overview: See README.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SUMMARY:
+  ✓ Mission photos stored in: Supabase Storage > mission-submissions bucket
+  ✓ Organized by: User ID folder
+  ✓ Accessed via: Public URLs
+  ✓ Stored in DB: mission_submissions.photo_url column
+  ✓ To switch: Update 3 environment variables and create bucket
+
+Ready to migrate? See SWITCH_SUPABASE_PROJECT.md for step-by-step guide!
+

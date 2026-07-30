@@ -1,0 +1,272 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║    CONNECT MISSION UPLOADS TO YOUR SUPABASE PROJECT - SETUP CHECKLIST    ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+YOUR SUPABASE PROJECT DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Project ID: vhnvamifepgdkelgboap
+  Project URL: https://vhnvamifepgdkelgboap.supabase.co
+  JWT Key: process.env.JWT
+  Service Role: process.env.Service_role
+
+SETUP - 5 SIMPLE STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: GET YOUR API KEYS
+─────────────────────────────────────────────────────────────────────────
+
+  [ ] Open: https://app.supabase.com/projects
+  
+  [ ] Click on your project: vhnvamifepgdkelgboap
+  
+  [ ] Click Settings (gear icon) in left sidebar
+  
+  [ ] Click API in the settings menu
+  
+  [ ] Find "Project API keys" section
+  
+  [ ] COPY the "Anon key" (long text starting with eyJ)
+      This is your JWT / NEXT_PUBLIC_SUPABASE_ANON_KEY
+      Keep it safe!
+  
+  [ ] COPY the "Service role key" (long text starting with eyJ)
+      This is your Service Role / SUPABASE_SERVICE_ROLE_KEY
+      Keep it safe!
+
+STEP 2: CREATE STORAGE BUCKET
+─────────────────────────────────────────────────────────────────────────
+
+  [ ] In Supabase dashboard, click: Storage (left sidebar)
+  
+  [ ] Click: "Create a new bucket"
+  
+  [ ] Set Name: mission-submissions
+  
+  [ ] Set Privacy: Public (IMPORTANT - so photos can be viewed)
+  
+  [ ] Click: "Create bucket"
+  
+  [ ] ✓ Bucket created!
+
+STEP 3: UPDATE LOCAL ENVIRONMENT (.env.local)
+─────────────────────────────────────────────────────────────────────────
+
+  [ ] Open: .env.local in your project root
+  
+  [ ] Add/Update these lines:
+  
+      NEXT_PUBLIC_SUPABASE_URL=https://vhnvamifepgdkelgboap.supabase.co
+      
+      NEXT_PUBLIC_SUPABASE_ANON_KEY=[PASTE YOUR JWT KEY HERE]
+      
+      SUPABASE_SERVICE_ROLE_KEY=[PASTE YOUR SERVICE ROLE KEY HERE]
+  
+  [ ] Make sure to PASTE the actual keys you copied in Step 1
+      (Not the text "process.env.JWT" - the actual JWT value)
+  
+  [ ] Save the file
+
+STEP 4: RESTART DEV SERVER
+─────────────────────────────────────────────────────────────────────────
+
+  [ ] Stop dev server (Ctrl+C in terminal)
+  
+  [ ] Run: npm run dev
+  
+  [ ] Wait for: "✓ Compiled successfully"
+  
+  [ ] Dev server restarted with YOUR Supabase project!
+
+STEP 5: UPDATE PRODUCTION (Vercel) - OPTIONAL
+─────────────────────────────────────────────────────────────────────────
+
+  [ ] Go to: https://vercel.com/dashboard
+  
+  [ ] Select: questly project
+  
+  [ ] Go to: Settings → Environment Variables
+  
+  [ ] Update NEXT_PUBLIC_SUPABASE_URL:
+      https://vhnvamifepgdkelgboap.supabase.co
+      Click Save
+  
+  [ ] Update NEXT_PUBLIC_SUPABASE_ANON_KEY:
+      [PASTE YOUR JWT KEY HERE]
+      Click Save
+  
+  [ ] Update SUPABASE_SERVICE_ROLE_KEY:
+      [PASTE YOUR SERVICE ROLE KEY HERE]
+      Click Save
+  
+  [ ] Go to Deployments and click "Redeploy"
+  
+  [ ] Wait for deployment to complete
+
+TEST EVERYTHING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TEST 1: LOCAL TEST
+─────────────────────────────────────────────────────────────────────────
+
+  [ ] Go to: http://localhost:3000/dashboard/missions
+  
+  [ ] Click any mission (e.g., "Team Selfie")
+  
+  [ ] Click: "Choose Photo" button
+  
+  [ ] Select: Any image from your computer
+  
+  [ ] Type: Some description (optional)
+  
+  [ ] Click: "Submit Mission"
+  
+  [ ] Check for: Success message (not error)
+  
+  [ ] ✓ Upload successful!
+
+TEST 2: VERIFY IN YOUR SUPABASE
+─────────────────────────────────────────────────────────────────────────
+
+  [ ] Go to: https://app.supabase.com/projects
+  
+  [ ] Select: vhnvamifepgdkelgboap
+  
+  [ ] Click: Storage
+  
+  [ ] Open: mission-submissions bucket
+  
+  [ ] Look for: Folder with your user ID
+  
+  [ ] Inside: Your uploaded image file
+  
+  [ ] ✓ Image confirmed in YOUR Supabase project!
+
+TEST 3: CHECK DATABASE
+─────────────────────────────────────────────────────────────────────────
+
+  [ ] In Supabase, click: Table Editor
+  
+  [ ] Select: mission_submissions table
+  
+  [ ] Find: Your recent submission
+  
+  [ ] Check: photo_url column
+  
+  [ ] It should show: https://vhnvamifepgdkelgboap.supabase.co/storage/...
+  
+  [ ] ✓ Database record confirmed!
+
+WHAT YOU'LL SEE IN YOUR SUPABASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Storage Bucket Structure:
+  mission-submissions/
+  ├─ {user-id-1}/
+  │  ├─ 1722345678-photo.jpg
+  │  └─ 1722345679-image.png
+  ├─ {user-id-2}/
+  │  └─ 1722345680-screenshot.jpg
+  └─ {user-id-3}/
+     └─ 1722345681-mission-pic.jpg
+
+Database Record:
+  Table: mission_submissions
+  Columns:
+    - id: unique submission ID
+    - mission_id: which mission
+    - user_id: who submitted
+    - photo_url: PUBLIC URL to your image (in YOUR bucket)
+    - status: pending/approved/rejected
+    - created_at: timestamp
+
+QUICK REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Upload Flow:
+  User clicks "Choose Photo"
+       ↓
+  Selects image
+       ↓
+  Clicks "Submit Mission"
+       ↓
+  Image uploads to YOUR Supabase Storage ✓
+       ↓
+  Public URL saved in YOUR Database ✓
+       ↓
+  Admin sees in /admin/submissions
+       ↓
+  Admin approves
+       ↓
+  Points awarded ✓
+
+Key Points:
+  • Images go to: YOUR Supabase Storage bucket
+  • Bucket name: mission-submissions
+  • Bucket privacy: Public (so images can be viewed)
+  • Database: YOUR Supabase database
+  • URLs: Generated from your project
+
+TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ISSUE: "Images not uploading - getting error"
+SOLUTION:
+  1. Check .env.local has actual keys (not "process.env.JWT")
+  2. Make sure keys start with "eyJ"
+  3. Restart dev server: npm run dev
+  4. Check bucket exists and is Public
+
+ISSUE: "404 error when viewing uploaded images"
+SOLUTION:
+  1. Check bucket privacy is set to Public
+  2. Verify bucket name is exactly "mission-submissions"
+  3. Check NEXT_PUBLIC_SUPABASE_URL is correct
+
+ISSUE: "Can't find API keys in Supabase"
+SOLUTION:
+  1. Go to: https://app.supabase.com/projects
+  2. Select your project
+  3. Click Settings (gear icon)
+  4. Click API in menu
+  5. Look for "Project API keys" section at bottom
+
+ISSUE: "Dev server not picking up new variables"
+SOLUTION:
+  1. Stop dev server (Ctrl+C)
+  2. Clear terminal
+  3. Run: npm run dev
+  4. Wait for "✓ Compiled successfully"
+
+COMPLETION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before you're done, verify:
+
+  [ ] Step 1: API keys obtained and copied
+  [ ] Step 2: mission-submissions bucket created and set to Public
+  [ ] Step 3: .env.local updated with ACTUAL keys
+  [ ] Step 4: Dev server restarted
+  [ ] Step 5: (Optional) Vercel environment updated
+  [ ] Test 1: Image uploaded successfully to local app
+  [ ] Test 2: Image appears in your Supabase Storage
+  [ ] Test 3: Image URL appears in database
+
+SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✓ All mission photos upload directly to YOUR Supabase project
+  ✓ Photos stored in mission-submissions bucket
+  ✓ Photos organized by user ID
+  ✓ Photos accessible via public URLs
+  ✓ Admin can view all photos in /admin/submissions
+  ✓ Everything connected to vhnvamifepgdkelgboap.supabase.co
+
+YOU'RE ALL SET!
+
+Next step: Start uploading mission photos to YOUR Supabase project!
+
+Questions? See: CONNECT_YOUR_SUPABASE.md for detailed guide
+

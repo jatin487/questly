@@ -1,0 +1,251 @@
+═════════════════════════════════════════════════════════════════════════════
+              COMPLETE MIGRATION CHECKLIST - Supabase Project Switch
+═════════════════════════════════════════════════════════════════════════════
+
+YOUR NEW PROJECT INFORMATION
+─────────────────────────────────────────────────────────────────────────────
+  Project ID: vhnvamifepgdkelgboap
+  URL: https://vhnvamifepgdkelgboap.supabase.co
+  Publishable Key: process.env.key
+  API Key: process.env.API_KEY
+
+═════════════════════════════════════════════════════════════════════════════
+                              STEP-BY-STEP GUIDE
+═════════════════════════════════════════════════════════════════════════════
+
+STEP 1: GET YOUR API KEYS
+───────────────────────────────────────────────────────────────────────────
+  [ ] Open: https://app.supabase.com/projects
+  [ ] Select project: vhnvamifepgdkelgboap
+  [ ] Go to: Settings (gear icon) → API
+  [ ] Find "Project API keys" section
+  [ ] Copy: Anon key (NEXT_PUBLIC_SUPABASE_ANON_KEY)
+  [ ] Copy: Service role key (SUPABASE_SERVICE_ROLE_KEY)
+  [ ] Save these safely (you'll need them in next step)
+
+STEP 2: CREATE STORAGE BUCKET
+───────────────────────────────────────────────────────────────────────────
+  [ ] In Supabase, click: Storage (in sidebar)
+  [ ] Click: "Create a new bucket"
+  [ ] Set Name: mission-submissions
+  [ ] Set Privacy: Public
+  [ ] Click: "Create bucket"
+  [ ] ✓ Bucket created and ready
+
+STEP 3: UPDATE ENVIRONMENT VARIABLES (Local Development)
+───────────────────────────────────────────────────────────────────────────
+  [ ] Open: .env.local (or create if missing)
+  [ ] Add/Update these variables:
+
+      NEXT_PUBLIC_SUPABASE_URL=https://vhnvamifepgdkelgboap.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY=[PASTE_YOUR_ANON_KEY_HERE]
+      SUPABASE_SERVICE_ROLE_KEY=[PASTE_YOUR_SERVICE_ROLE_KEY_HERE]
+
+  [ ] Save the file
+  [ ] ✓ Local environment configured
+
+STEP 4: UPDATE ENVIRONMENT VARIABLES (Production - Vercel)
+───────────────────────────────────────────────────────────────────────────
+  [ ] Open: https://vercel.com/dashboard
+  [ ] Select project: questly
+  [ ] Go to: Settings → Environment Variables
+  [ ] Click: Edit (for NEXT_PUBLIC_SUPABASE_URL)
+      Value: https://vhnvamifepgdkelgboap.supabase.co
+      Save
+  [ ] Click: Edit (for NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      Value: [YOUR_ANON_KEY_FROM_STEP_1]
+      Save
+  [ ] Click: Edit (for SUPABASE_SERVICE_ROLE_KEY)
+      Value: [YOUR_SERVICE_ROLE_KEY_FROM_STEP_1]
+      Save
+  [ ] ✓ Production environment updated
+
+STEP 5: RESTART DEVELOPMENT SERVER (If running locally)
+───────────────────────────────────────────────────────────────────────────
+  [ ] Stop dev server (Ctrl+C in terminal)
+  [ ] Run: npm run dev
+  [ ] Wait for: "✓ Compiled successfully"
+  [ ] ✓ App restarted with new Supabase project
+
+STEP 6: TEST IMAGE UPLOAD
+───────────────────────────────────────────────────────────────────────────
+  [ ] Go to: http://localhost:3000/dashboard/missions
+  [ ] Click: Any mission (e.g., "Team Selfie")
+  [ ] Click: "Choose Photo" button
+  [ ] Select: Any image from your computer
+  [ ] Type: Some description text
+  [ ] Click: "Submit Mission"
+  [ ] Wait: For success message
+  [ ] ✓ Image uploaded successfully
+
+STEP 7: VERIFY IMAGE IN STORAGE
+───────────────────────────────────────────────────────────────────────────
+  [ ] Open: Supabase dashboard
+  [ ] Select: Your project (vhnvamifepgdkelgboap)
+  [ ] Click: Storage (in sidebar)
+  [ ] Open: mission-submissions bucket
+  [ ] Look for: Folder with your user ID
+  [ ] Inside: Your uploaded image file
+  [ ] ✓ Image confirmed in new project
+
+STEP 8: VERIFY IN ADMIN DASHBOARD
+───────────────────────────────────────────────────────────────────────────
+  [ ] Go to: http://localhost:3000/admin/submissions
+  [ ] Look for: Your recent submission
+  [ ] Click: Submit/review the submission
+  [ ] Confirm: Image preview shows up
+  [ ] ✓ Admin dashboard working
+
+STEP 9: VERIFY IN DATABASE
+───────────────────────────────────────────────────────────────────────────
+  [ ] Open: Supabase dashboard
+  [ ] Click: Table Editor → mission_submissions
+  [ ] Find: Your recent submission
+  [ ] Check: photo_url column contains the image URL
+  [ ] ✓ Database record confirmed
+
+STEP 10: REDEPLOY TO PRODUCTION (Vercel)
+───────────────────────────────────────────────────────────────────────────
+  [ ] Go to: https://vercel.com/dashboard
+  [ ] Select: questly project
+  [ ] Click: "Deployments" tab
+  [ ] Option A - Automatic: Push to GitHub (auto-deploys)
+      git push origin main
+  [ ] Option B - Manual: Click "Redeploy" on latest deployment
+  [ ] Wait for: Deployment to complete (shows ✓ Production)
+  [ ] ✓ Production deployed with new Supabase project
+
+═════════════════════════════════════════════════════════════════════════════
+                          VERIFICATION CHECKLIST
+═════════════════════════════════════════════════════════════════════════════
+
+Before considering migration complete, verify all of these:
+
+DATABASE & STORAGE
+  [ ] New Supabase project has mission_submissions bucket
+  [ ] Bucket is set to Public privacy
+  [ ] Images upload without errors
+  [ ] Images appear in Supabase Storage dashboard
+  [ ] Image URLs are valid (not 404s)
+  [ ] Database stores correct image URLs
+
+ENVIRONMENT VARIABLES
+  [ ] NEXT_PUBLIC_SUPABASE_URL correct (no trailing slashes)
+  [ ] NEXT_PUBLIC_SUPABASE_ANON_KEY valid (starts with eyJ)
+  [ ] SUPABASE_SERVICE_ROLE_KEY valid (starts with eyJ)
+  [ ] No extra spaces or typos in keys
+  [ ] Local .env.local updated
+  [ ] Vercel environment variables updated
+
+APPLICATION FUNCTIONALITY
+  [ ] Users can login successfully
+  [ ] Users can access mission pages
+  [ ] Image upload works without errors
+  [ ] Uploaded images visible in admin dashboard
+  [ ] Admin can approve/reject submissions
+  [ ] Points are awarded correctly
+  [ ] Leaderboard updates properly
+  [ ] Teams still function correctly
+
+═════════════════════════════════════════════════════════════════════════════
+                         TROUBLESHOOTING SECTION
+═════════════════════════════════════════════════════════════════════════════
+
+PROBLEM: "Images not uploading"
+  Solution:
+    1. Check mission-submissions bucket exists
+    2. Verify bucket privacy is set to Public
+    3. Confirm NEXT_PUBLIC_SUPABASE_URL is correct
+    4. Restart dev server: npm run dev
+
+PROBLEM: "404 errors on image URLs"
+  Solution:
+    1. Verify bucket is set to Public (not private)
+    2. Check image actually exists in bucket
+    3. Confirm URL format (no extra spaces)
+    4. Check NEXT_PUBLIC_SUPABASE_URL in environment
+
+PROBLEM: "Can't find API keys in Supabase"
+  Solution:
+    1. Go to: https://app.supabase.com/projects
+    2. Select your project
+    3. Click Settings (gear icon in left sidebar)
+    4. Click "API" in the settings menu
+    5. Keys are under "Project API keys" section
+
+PROBLEM: "Environment variables not taking effect"
+  Solution:
+    1. For local: Stop dev server and run npm run dev again
+    2. For Vercel: Manual redeploy or wait for auto-deployment
+    3. Clear browser cache (Ctrl+Shift+Delete)
+    4. Check for typos in variable names
+
+PROBLEM: "Users getting 'Unauthorized' errors"
+  Solution:
+    1. Verify NEXT_PUBLIC_SUPABASE_ANON_KEY is correct
+    2. Check it starts with "eyJ" (JWT format)
+    3. Confirm no extra spaces in the key
+    4. Try creating a new test user
+
+PROBLEM: "Old images still showing"
+  Solution:
+    1. This is normal - old images reference old project
+    2. New images go to your new project
+    3. To migrate old images, manually copy bucket files
+    4. Or just accept that new content goes forward
+
+═════════════════════════════════════════════════════════════════════════════
+                           IMPORTANT NOTES
+═════════════════════════════════════════════════════════════════════════════
+
+  ⚠️  DO NOT delete old Supabase project yet
+      - Old images still reference it
+      - Keep for backup/reference
+      - Can delete after confirming new project works
+
+  ✅  NO code changes required
+      - Only environment variables change
+      - All code works with both projects
+      - Just plug in new credentials
+
+  ℹ️  New images go to new project
+      - Only new uploads stored in new bucket
+      - Old images stay in old project
+      - Both projects can coexist
+
+  ⏱️  Deployment timing
+      - Local changes: Immediate (after npm run dev)
+      - Vercel: 1-5 minutes for auto-deploy
+      - Manual redeploy: Instant
+
+═════════════════════════════════════════════════════════════════════════════
+                         QUICK REFERENCE LINKS
+═════════════════════════════════════════════════════════════════════════════
+
+  Supabase Projects:         https://app.supabase.com/projects
+  Vercel Dashboard:          https://vercel.com/dashboard
+  App Local Dev:             http://localhost:3000
+  App Admin:                 http://localhost:3000/admin
+  App Missions:              http://localhost:3000/dashboard/missions
+
+═════════════════════════════════════════════════════════════════════════════
+                            NEXT STEPS
+═════════════════════════════════════════════════════════════════════════════
+
+  After completing all steps:
+
+    ✓ Your app is now using the new Supabase project
+    ✓ New mission images upload to your new project
+    ✓ Everything continues to work normally
+    ✓ Can now proceed with app development/deployment
+
+  If you need help:
+
+    • See SWITCH_SUPABASE_PROJECT.md for detailed guide
+    • See IMAGE_STORAGE_REFERENCE.md for technical details
+    • See SUPABASE_MIGRATION.md for complete migration guide
+
+═════════════════════════════════════════════════════════════════════════════
+                      Migration Completed! ✓
+═════════════════════════════════════════════════════════════════════════════
+
