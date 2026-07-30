@@ -11,6 +11,7 @@ const sampleMissions = [
     category: 'team',
     requires_photo: true,
     requires_gps: false,
+    is_active: true,
   },
   {
     title: 'Mission 2: Find the Building',
@@ -22,6 +23,7 @@ const sampleMissions = [
     category: 'building',
     requires_photo: true,
     requires_gps: true,
+    is_active: true,
   },
   {
     title: 'Mission 3: Meet a Professor',
@@ -33,6 +35,7 @@ const sampleMissions = [
     category: 'faculty',
     requires_photo: true,
     requires_gps: false,
+    is_active: true,
   },
   {
     title: 'Mission 4: Canteen Hunt',
@@ -44,6 +47,7 @@ const sampleMissions = [
     category: 'canteen',
     requires_photo: true,
     requires_gps: false,
+    is_active: true,
   },
   {
     title: 'Mission 5: Campus Reel',
@@ -55,6 +59,7 @@ const sampleMissions = [
     category: 'creative',
     requires_photo: true,
     requires_gps: false,
+    is_active: true,
   },
   {
     title: 'Mission 6: Plant Explorer',
@@ -66,6 +71,7 @@ const sampleMissions = [
     category: 'nature',
     requires_photo: true,
     requires_gps: false,
+    is_active: true,
   },
   {
     title: 'Mission 7: Safety First',
@@ -77,6 +83,7 @@ const sampleMissions = [
     category: 'safety',
     requires_photo: true,
     requires_gps: false,
+    is_active: true,
   },
 ]
 

@@ -43,13 +43,13 @@ export default function MissionDetailPage() {
   useEffect(() => {
     async function loadMission() {
       try {
-        const { data, error } = await supabase
-          .from('missions')
-          .select('*')
-          .eq('id', missionId)
-          .single()
+        const response = await fetch(`/api/missions/${missionId}`)
+        const data = await response.json()
 
-        if (error) throw error
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to load mission')
+        }
+
         setMission(data)
       } catch (error) {
         console.error('Error loading mission:', error)
@@ -60,7 +60,7 @@ export default function MissionDetailPage() {
     }
 
     loadMission()
-  }, [missionId, supabase, router])
+  }, [missionId, router])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

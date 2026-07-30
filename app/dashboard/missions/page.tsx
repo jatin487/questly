@@ -33,13 +33,13 @@ export default function MissionsPage() {
   useEffect(() => {
     async function loadMissions() {
       try {
-        const { data, error } = await supabase
-          .from('missions')
-          .select('*')
-          .eq('is_active', true)
-          .order('difficulty')
+        const response = await fetch('/api/missions')
+        const data = await response.json()
 
-        if (error) throw error
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to load missions')
+        }
+
         setMissions(data || [])
       } catch (error) {
         console.error('Error loading missions:', error)
@@ -49,7 +49,7 @@ export default function MissionsPage() {
     }
 
     loadMissions()
-  }, [supabase])
+  }, [])
 
   if (loading) {
     return <div className="p-8">Loading missions...</div>
