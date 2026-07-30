@@ -55,10 +55,12 @@ export default function DashboardPage() {
       {/* Welcome Section */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">
-          Welcome back, {profile?.display_name}!
+          {profile?.display_name ? `Welcome back, ${profile.display_name}!` : 'Welcome to your dashboard!'}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Ready to explore campus and earn points?
+          {profile?.display_name
+            ? 'Ready to explore campus and earn points?'
+            : 'Explore missions, see the leaderboard, and manage your team from here.'}
         </p>
       </div>
 

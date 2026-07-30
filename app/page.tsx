@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 export default function HomePage() {
+  const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [teamsCount, setTeamsCount] = useState<number | null>(null)
@@ -43,10 +45,8 @@ export default function HomePage() {
         throw new Error(data.error || 'Something went wrong')
       }
 
-      setMessage(`Thanks ${data.profile?.display_name || name}! Your details are saved.`)
-      setTeamsCount(data.teams_count ?? teamsCount ?? 0)
-      setName('')
-      setEmail('')
+      // After registration, move the user to the dashboard
+      router.push('/dashboard')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Registration failed')
     } finally {
