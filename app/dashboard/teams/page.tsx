@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { getLocalProfile } from '@/lib/profile'
+import { getLocalProfile, saveLocalProfile } from '@/lib/profile'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +41,8 @@ export default function TeamsPage() {
   const [newTeamName, setNewTeamName] = useState('')
   const [newTeamDesc, setNewTeamDesc] = useState('')
   const [joinTeamId, setJoinTeamId] = useState('')
+  const [joinName, setJoinName] = useState('')
+  const [joinEmail, setJoinEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const supabase = useMemo(() => createClient(), [])
 
@@ -178,24 +180,49 @@ export default function TeamsPage() {
         data: { user },
       } = await supabase.auth.getUser()
       const userId = user?.id || localProfile?.id
+      const body: Record<string, string> = {}
 
-      if (!userId) throw new Error('Not authenticated')
+      if (userId) {
+        body.user_id = userId
+      } else {
+        if (!joinName.trim() || !joinEmail.trim()) {
+          throw new Error('Name and email are required to join as a guest')
+        }
 
-      const { error } = await supabase.from('team_members').insert({
-        team_id: joinTeamId,
-        user_id: userId,
-        role: 'member',
+        body.display_name = joinName.trim()
+        body.email = joinEmail.trim().toLowerCase()
+      }
+
+      const response = await fetch(`/api/teams/${joinTeamId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
       })
 
-      if (error) throw error
+      const responseText = await response.text()
+      let errorData: any
+      try {
+        errorData = JSON.parse(responseText)
+      } catch {
+        errorData = { error: responseText }
+      }
+
+      if (!response.ok) {
+        const message = errorData.error || `HTTP ${response.status}: Failed to join team`
+        console.error('[v0] Join team error:', { status: response.status, error: errorData })
+        throw new Error(message)
+      }
 
       setJoinTeamId('')
+      setJoinName('')
+      setJoinEmail('')
       setJoinOpen(false)
 
       await loadTeams()
     } catch (error) {
-      console.error('Error joining team:', error)
-      alert('Failed to join team')
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      console.error('Error joining team:', errorMsg)
+      alert(`Failed to join team: ${errorMsg}`)
     } finally {
       setSubmitting(false)
     }
@@ -281,6 +308,28 @@ export default function TeamsPage() {
                       ))}
                   </select>
                 </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Your Name</label>
+                    <Input
+                      placeholder="Enter your name"
+                      value={joinName}
+                      onChange={(e) => setJoinName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Your Email</label>
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={joinEmail}
+                      onChange={(e) => setJoinEmail(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  If you&apos;re not signed in, enter your name and email to join as a guest.
+                </p>
                 <Button type="submit" className="w-full" disabled={submitting || !joinTeamId}>
                   {submitting ? 'Joining...' : 'Join Team'}
                 </Button>
