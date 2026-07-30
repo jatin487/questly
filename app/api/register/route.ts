@@ -20,18 +20,23 @@ function getSupabaseClient() {
 export async function GET() {
   try {
     const supabase = getSupabaseClient()
-    const { count, error } = await supabase
+    const { data: teams, error } = await supabase
       .from('teams')
-      .select('*', { count: 'exact', head: true })
+      .select('id, name, members_count')
+      .order('name', { ascending: true })
 
     if (error) {
-      return NextResponse.json({ teams_count: 0, error: error.message }, { status: 400 })
+      return NextResponse.json({ teams_count: 0, teams: [], error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ teams_count: count ?? 0 })
+    return NextResponse.json({ teams_count: teams?.length ?? 0, teams: teams ?? [] })
   } catch (error) {
     return NextResponse.json(
-      { teams_count: 0, error: error instanceof Error ? error.message : 'Server error' },
+      {
+        teams_count: 0,
+        teams: [],
+        error: error instanceof Error ? error.message : 'Server error',
+      },
       { status: 500 },
     )
   }
@@ -42,6 +47,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const name = (body?.name ?? '').toString().trim()
     const email = (body?.email ?? '').toString().trim().toLowerCase()
+    const teamId = (body?.team_id ?? '').toString().trim()
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Please enter both your name and email.' }, { status: 400 })
@@ -67,6 +73,55 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    if (teamId) {
+      const { data: team, error: teamError } = await supabase
+        .from('teams')
+        .select('id')
+        .eq('id', teamId)
+        .single()
+
+      if (teamError || !team) {
+        return NextResponse.json({ error: 'Selected team not found.' }, { status: 404 })
+      }
+
+      const { data: existingMember, error: memberCheckError } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('team_id', teamId)
+        .eq('user_id', profileId)
+        .maybeSingle()
+
+      if (memberCheckError) {
+        return NextResponse.json({ error: memberCheckError.message }, { status: 400 })
+      }
+
+      if (!existingMember) {
+        const { error: joinError } = await supabase.from('team_members').insert([
+          {
+            team_id: teamId,
+            user_id: profileId,
+            role: 'member',
+          },
+        ])
+
+        if (joinError) {
+          return NextResponse.json({ error: joinError.message }, { status: 400 })
+        }
+
+        const { count: memberCount, error: countError } = await supabase
+          .from('team_members')
+          .select('id', { count: 'exact', head: true })
+          .eq('team_id', teamId)
+
+        if (!countError) {
+          await supabase
+            .from('teams')
+            .update({ members_count: memberCount ?? 0 })
+            .eq('id', teamId)
+        }
+      }
     }
 
     const { count: teamsCount, error: teamsError } = await supabase

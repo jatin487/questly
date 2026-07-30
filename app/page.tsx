@@ -6,10 +6,18 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { getLocalProfile, saveLocalProfile } from '@/lib/profile'
 
+interface TeamOption {
+  id: string
+  name: string
+  members_count?: number
+}
+
 export default function HomePage() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [teamId, setTeamId] = useState('')
+  const [teams, setTeams] = useState<TeamOption[]>([])
   const [teamsCount, setTeamsCount] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -21,17 +29,19 @@ export default function HomePage() {
       return
     }
 
-    async function loadTeamCount() {
+    async function loadTeams() {
       try {
         const response = await fetch('/api/register')
         const data = await response.json()
-        setTeamsCount(data.teams_count ?? 0)
+        setTeams(data.teams ?? [])
+        setTeamsCount(data.teams_count ?? (data.teams?.length ?? 0))
       } catch {
+        setTeams([])
         setTeamsCount(0)
       }
     }
 
-    loadTeamCount()
+    loadTeams()
   }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -43,7 +53,7 @@ export default function HomePage() {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, team_id: teamId }),
       })
 
       const data = await response.json()
@@ -53,7 +63,6 @@ export default function HomePage() {
       }
 
       saveLocalProfile(data.profile)
-      // After registration, move the user to the dashboard
       router.push('/dashboard')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Registration failed')
@@ -94,8 +103,24 @@ export default function HomePage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Saving...' : 'Register'}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Join a team</label>
+              <select
+                value={teamId}
+                onChange={(e) => setTeamId(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2"
+                required
+              >
+                <option value="">Choose a team...</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name} {team.members_count ? `(${team.members_count} members)` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button type="submit" className="w-full" disabled={loading || teams.length === 0}>
+              {loading ? 'Saving...' : 'Register and Join'}
             </Button>
             {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
           </form>
