@@ -23,6 +23,34 @@ export async function POST(request: NextRequest) {
 
     console.log('[v0] Teams API: Creating team for user', user.id, { name, description })
 
+    // Ensure user profile exists before creating team
+    const { data: profile, error: profileCheckError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile) {
+      console.log('[v0] Teams API: Profile missing for user', user.id, '- creating it')
+      const { error: profileCreateError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            id: user.id,
+            username: user.email || `user_${user.id.slice(0, 8)}`,
+            display_name: user.user_metadata?.display_name || user.email || 'User',
+          },
+        ])
+
+      if (profileCreateError) {
+        console.error('[v0] Teams API: Profile creation error:', profileCreateError.message)
+        return NextResponse.json(
+          { error: `Failed to create user profile: ${profileCreateError.message}` },
+          { status: 400 }
+        )
+      }
+    }
+
     // Create team
     const { data: team, error: teamError } = await supabase
       .from('teams')
