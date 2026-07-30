@@ -122,7 +122,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('teams')
-      .select('*, team_members(count)')
+      .select('*')
       .order('total_points', { ascending: false })
 
     if (error) {

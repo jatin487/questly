@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getLocalProfile } from '@/lib/profile'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,9 +21,9 @@ import Link from 'next/link'
 interface Team {
   id: string
   name: string
-  description: string
-  total_points: number
-  members_count: number
+  description?: string
+  total_points?: number
+  members_count?: number
 }
 
 interface UserTeam {
@@ -42,7 +42,7 @@ export default function TeamsPage() {
   const [newTeamDesc, setNewTeamDesc] = useState('')
   const [joinTeamId, setJoinTeamId] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   async function loadTeams() {
     try {
@@ -78,14 +78,24 @@ export default function TeamsPage() {
 
       setUserTeams(userTeamsData)
 
-      // Load all teams
-      const { data: allTeamsData, error: allTeamsError } = await supabase
-        .from('teams')
-        .select('*')
-        .order('total_points', { ascending: false })
+      // Load all teams via the public teams API for more consistent handling
+      const teamsResponse = await fetch('/api/teams')
+      if (!teamsResponse.ok) {
+        const errorText = await teamsResponse.text()
+        throw new Error(`Failed to load teams: ${errorText}`)
+      }
 
-      if (allTeamsError) throw allTeamsError
-      setAllTeams(allTeamsData || [])
+      const allTeamsData = (await teamsResponse.json()) as any[]
+      setAllTeams(
+        (allTeamsData || []).map((team) => ({
+          ...team,
+          total_points: team.total_points ?? 0,
+          members_count:
+            team.members_count ??
+            (team.team_members?.[0]?.count ?? 0) ??
+            0,
+        }))
+      )
     } catch (error) {
       console.error('Error loading teams:', error)
     } finally {
@@ -95,7 +105,7 @@ export default function TeamsPage() {
 
   useEffect(() => {
     loadTeams()
-  }, [supabase])
+  }, [])
 
   async function handleCreateTeam(e: React.FormEvent) {
     e.preventDefault()
