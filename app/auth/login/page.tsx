@@ -28,66 +28,30 @@ export default function LoginPage() {
         return
       }
 
-      // Try to sign in or create a passwordless session
-      const { data: existingUser, error: lookupError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email.toLowerCase())
-        .single()
-
-      if (existingUser) {
-        // User exists - authenticate via magic link
-        const { error: signInError } = await supabase.auth.signInWithOtp({
-          email: email.toLowerCase(),
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+      // Send magic link - works for both existing and new users
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: email.toLowerCase(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            display_name: name,
           },
-        })
+        },
+      })
 
-        if (signInError) {
-          setError('Failed to send magic link. Please try again.')
-          return
-        }
-
-        setError(null)
-        router.push('/auth/check-email')
-      } else {
-        // New user - create profile and send magic link
-        const { error: signUpError } = await supabase.auth.signUpWithPassword({
-          email: email.toLowerCase(),
-          password: Math.random().toString(36).slice(-12), // Generate random password
-          options: {
-            data: {
-              display_name: name,
-            },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        })
-
-        if (signUpError) {
-          if (signUpError.message.includes('already registered')) {
-            setError('Email already registered. Please use another email.')
-          } else {
-            setError(signUpError.message || 'Failed to create account')
-          }
-          return
-        }
-
-        // Create profile record
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          await supabase.from('profiles').insert([
-            {
-              id: user.id,
-              email: email.toLowerCase(),
-              display_name: name,
-              username: name.toLowerCase().replace(/\s+/g, '_'),
-            },
-          ])
-        }
-
-        router.push('/auth/check-email')
+      if (otpError) {
+        console.error('[v0] Magic link error:', otpError)
+        setError('Failed to send magic link. Please try again.')
+        return
       }
+
+      // Store name and email for profile creation after auth
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('signup_name', name)
+        localStorage.setItem('signup_email', email.toLowerCase())
+      }
+
+      router.push('/auth/check-email')
     } catch (err) {
       console.error('Login error:', err)
       setError('An unexpected error occurred')
